@@ -118,6 +118,7 @@ export default function CargarParticipantePage() {
         nombre,
         apellido,
         carton,
+        telefono,
       },
 
       predictions,
@@ -259,6 +260,11 @@ export default function CargarParticipantePage() {
                     <p className="text-muted-foreground text-sm">
                       Cartón #{carton}
                     </p>
+                    {telefono && (
+                        <p>
+                            Tel: {telefono}
+                        </p>
+                    )}
                   </div>
 
                   <div className="text-right">

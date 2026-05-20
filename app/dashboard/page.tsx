@@ -43,7 +43,7 @@ export default function DashboardPage() {
             </CardHeader>
 
             <CardContent>
-              <Link href="/tabla">
+              <Link href="/tablaPosiciones">
                 <Button className="w-full">
                   Ver tabla de posiciones
                 </Button>
