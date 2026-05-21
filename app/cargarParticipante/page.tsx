@@ -300,7 +300,8 @@ export default function CargarParticipantePage() {
                     <div className="flex flex-col gap-5">
                       <div className="flex items-center justify-between">
                         <div className="text-center flex-1">
-                          <div className="text-4xl">{match.homeTeam.flag}</div>
+                          <img src={match.homeTeam.flagUrl} alt={match.homeTeam.name} className="w-10 h-7 object-cover rounded mx-auto" />
+
 
                           <p className="font-semibold mt-2">
                             {match.homeTeam.name}
@@ -312,7 +313,7 @@ export default function CargarParticipantePage() {
                         </div>
 
                         <div className="text-center flex-1">
-                          <div className="text-4xl">{match.awayTeam.flag}</div>
+                          <img src={match.awayTeam.flagUrl} alt={match.awayTeam.name} className="w-10 h-7 object-cover rounded mx-auto" />
 
                           <p className="font-semibold mt-2">
                             {match.awayTeam.name}
