@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/hooks/useSession"
 import Link from "next/link"
@@ -16,6 +16,9 @@ import { Button } from "@/components/ui/button"
 export default function DashboardPage() {
   const { user, loading } = useSession()
   const router = useRouter()
+  const [refreshing, setRefreshing] = useState(false)
+  const [refreshResult, setRefreshResult] = useState<string | null>(null)
+  const [refreshError, setRefreshError] = useState<string | null>(null)
 
   useEffect(() => {
     if (loading) return
@@ -45,6 +48,25 @@ export default function DashboardPage() {
     router.replace("/")
   }
 
+  const handleRefreshPoints = async () => {
+    setRefreshing(true)
+    setRefreshResult(null)
+    setRefreshError(null)
+    try {
+      const res = await fetch("/api/admin/refresh-points", { method: "POST" })
+      const data = await res.json()
+      if (!res.ok) {
+        setRefreshError(`Error: ${data.error}`)
+      } else {
+        setRefreshResult(`✓ ${data.message} (${data.updated} predicciones premiadas)`)
+      }
+    } catch {
+      setRefreshError("No se pudo conectar con la API. Intentá de nuevo.")
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/95 backdrop-blur">
@@ -66,7 +88,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-10">
+      <main className="container mx-auto px-4 py-10 flex flex-col gap-6">
         <div className="grid gap-6 md:grid-cols-2">
           <Card className="bg-card border-border transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10">
             <CardHeader>
@@ -100,6 +122,38 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        <Card className="bg-card border-border transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+          <CardHeader>
+            <CardTitle className="text-card-foreground">Resultados</CardTitle>
+            <CardDescription>
+              Consulta los resultados de la API y suma puntos a los usuarios que acertaron.
+              {refreshResult && (
+                <span className="block mt-1 text-primary">{refreshResult}</span>
+              )}
+              {refreshError && (
+                <span className="block mt-1 text-destructive">{refreshError}</span>
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              className="w-full border-border text-card-foreground hover:bg-secondary disabled:opacity-50"
+              onClick={handleRefreshPoints}
+              disabled={refreshing}
+            >
+              {refreshing ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  Actualizando…
+                </span>
+              ) : (
+                "Refrescar resultados y calcular puntos"
+              )}
+            </Button>
+          </CardContent>
+        </Card>
       </main>
     </div>
   )
