@@ -2,34 +2,34 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { AuthProvider, useAuth } from "@/lib/auth-context"
+import { useSession } from "@/hooks/useSession"
 import { LeaderboardView } from "@/components/leaderboard-view"
 
-function TablaContent() {
-  const { user } = useAuth()
+export default function TablaPage() {
+  const { user, loading } = useSession()
   const router = useRouter()
 
   useEffect(() => {
+    if (loading) return
     if (!user) {
-      router.push("/")
+      router.replace("/")
     }
-  }, [user, router])
+  }, [user, loading, router])
 
-  if (!user) {
-    return null
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-foreground">Cargando...</p>
+      </div>
+    )
   }
 
-  const handleLogout = () => {
-    router.push("/")
+  if (!user) return null
+
+  const handleLogout = async () => {
+    await fetch("/api/users/logout", { method: "POST" })
+    router.replace("/")
   }
 
   return <LeaderboardView onLogout={handleLogout} />
-}
-
-export default function TablaPage() {
-  return (
-    <AuthProvider>
-      <TablaContent />
-    </AuthProvider>
-  )
 }

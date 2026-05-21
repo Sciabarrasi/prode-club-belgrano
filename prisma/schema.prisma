@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+  SUPERADMIN
+}
+
+model User {
+  id              String        @id @default(cuid())
+
+  // número/cartón único del participante
+  ticketNumber    Int           @unique
+
+  firstName       String
+  lastName        String
+
+  email           String        @unique
+
+  phone           String
+
+  passwordHash    String
+
+  role            Role          @default(USER)
+
+  // puntos totales acumulados
+  points          Int           @default(0)
+
+  predictions     Prediction[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([email])
+  @@index([ticketNumber])
+  @@index([points])
+}
+
+model Prediction {
+  id                Int       @id @default(autoincrement())
+
+  userId            String
+
+  // ID REAL del partido en WC2026 API
+  matchId           Int
+
+  predictedHome     Int
+  predictedAway     Int
+
+  // puntos obtenidos por esta predicción
+  pointsEarned      Int       @default(0)
+
+  user              User      @relation(fields: [userId], references: [id])
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // evita predicciones duplicadas
+  @@unique([userId, matchId])
+
+  @@index([userId])
+  @@index([matchId])
+}
