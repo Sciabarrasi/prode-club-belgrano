@@ -4,6 +4,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    domains: ["flagcdn.com"],
     unoptimized: true,
   },
 }

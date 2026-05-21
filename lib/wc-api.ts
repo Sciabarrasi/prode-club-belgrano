@@ -3,89 +3,143 @@ export interface WCTeam {
   name: string
   code: string
   flag_url: string | null
+  group_name: string
 }
 
-export interface WCGroup {
-  id: string
-  name: string
+// Mapa de códigos ISO 3166-1 alpha-2 para flagcdn.com
+const FLAG_CODE_MAP: Record<string, string> = {
+  Argentina: "ar",
+  Algeria: "dz",
+  Australia: "au",
+  Austria: "at",
+  Belgium: "be",
+  Brazil: "br",
+  "Bosnia-Herzegovina": "ba",
+  "Cabo Verde": "cv",
+  Canada: "ca",
+  Chile: "cl",
+  Colombia: "co",
+  "Congo DR": "cd",
+  Croatia: "hr",
+  "Curaçao": "cw",
+  Czechia: "cz",
+  Denmark: "dk",
+  Ecuador: "ec",
+  Egypt: "eg",
+  England: "gb-eng",
+  France: "fr",
+  Germany: "de",
+  Ghana: "gh",
+  Haiti: "ht",
+  Hungary: "hu",
+  Iraq: "iq",
+  "IR Iran": "ir",
+  Iran: "ir",
+  Italy: "it",
+  Jamaica: "jm",
+  Japan: "jp",
+  Jordan: "jo",
+  "Korea Republic": "kr",
+  Mexico: "mx",
+  Morocco: "ma",
+  Netherlands: "nl",
+  "New Zealand": "nz",
+  Norway: "no",
+  Panama: "pa",
+  Paraguay: "py",
+  Peru: "pe",
+  Poland: "pl",
+  Portugal: "pt",
+  Qatar: "qa",
+  "Saudi Arabia": "sa",
+  Scotland: "gb-sct",
+  Senegal: "sn",
+  Serbia: "rs",
+  "South Africa": "za",
+  Spain: "es",
+  Sweden: "se",
+  Switzerland: "ch",
+  Tunisia: "tn",
+  Turkey: "tr",
+  Uruguay: "uy",
+  USA: "us",
+  Uzbekistan: "uz",
+  Venezuela: "ve",
+  Wales: "gb-wls",
+  "Côte d'Ivoire": "ci",
 }
 
-const FLAG_MAP: Record<
-  string,
-  string
-> = {
-  Argentina: "🇦🇷",
-  Algeria: "🇩🇿",
-  Australia: "🇦🇺",
-  Austria: "🇦🇹",
-  Belgium: "🇧🇪",
-  Brazil: "🇧🇷",
-  "Bosnia-Herzegovina":
-    "🇧🇦",
-  "Cabo Verde": "🇨🇻",
-  Canada: "🇨🇦",
-  Chile: "🇨🇱",
-  Colombia: "🇨🇴",
-  "Congo DR": "🇨🇩",
-  Croatia: "🇭🇷",
-  Curaçao: "🇨🇼",
-  Czechia: "🇨🇿",
-  Denmark: "🇩🇰",
-  Ecuador: "🇪🇨",
-  Egypt: "🇪🇬",
-  England: "🏴",
-  France: "🇫🇷",
-  Germany: "🇩🇪",
-  Ghana: "🇬🇭",
-  Haiti: "🇭🇹",
-  Hungary: "🇭🇺",
-  Iraq: "🇮🇶",
-  "IR Iran": "🇮🇷",
-  Iran: "🇮🇷",
-  Italy: "🇮🇹",
-  Jamaica: "🇯🇲",
-  Japan: "🇯🇵",
-  Jordan: "🇯🇴",
-  "Korea Republic":
-    "🇰🇷",
-  Mexico: "🇲🇽",
-  Morocco: "🇲🇦",
-  Netherlands: "🇳🇱",
-  "New Zealand":
-    "🇳🇿",
-  Norway: "🇳🇴",
-  Panama: "🇵🇦",
-  Paraguay: "🇵🇾",
-  Peru: "🇵🇪",
-  Poland: "🇵🇱",
-  Portugal: "🇵🇹",
-  Qatar: "🇶🇦",
-  "Saudi Arabia":
-    "🇸🇦",
-  Scotland: "🏴",
-  Senegal: "🇸🇳",
-  Serbia: "🇷🇸",
-  "South Africa":
-    "🇿🇦",
-  Spain: "🇪🇸",
-  Sweden: "🇸🇪",
-  Switzerland: "🇨🇭",
-  Tunisia: "🇹🇳",
-  Turkey: "🇹🇷",
-  Uruguay: "🇺🇾",
-  USA: "🇺🇸",
-  Uzbekistan: "🇺🇿",
-  Venezuela: "🇻🇪",
-  Wales: "🏴",
-  "Côte d'Ivoire":
-    "🇨🇮",
+// Traducción de nombres al español
+const TEAM_NAME_ES: Record<string, string> = {
+  Argentina: "Argentina",
+  Algeria: "Argelia",
+  Australia: "Australia",
+  Austria: "Austria",
+  Belgium: "Bélgica",
+  Brazil: "Brasil",
+  "Bosnia-Herzegovina": "Bosnia-Herzegovina",
+  "Cabo Verde": "Cabo Verde",
+  Canada: "Canadá",
+  Chile: "Chile",
+  Colombia: "Colombia",
+  "Congo DR": "Congo RD",
+  Croatia: "Croacia",
+  "Curaçao": "Curaçao",
+  Czechia: "Chequia",
+  Denmark: "Dinamarca",
+  Ecuador: "Ecuador",
+  Egypt: "Egipto",
+  England: "Inglaterra",
+  France: "Francia",
+  Germany: "Alemania",
+  Ghana: "Ghana",
+  Haiti: "Haití",
+  Hungary: "Hungría",
+  Iraq: "Irak",
+  "IR Iran": "Irán",
+  Iran: "Irán",
+  Italy: "Italia",
+  Jamaica: "Jamaica",
+  Japan: "Japón",
+  Jordan: "Jordania",
+  "Korea Republic": "Corea del Sur",
+  Mexico: "México",
+  Morocco: "Marruecos",
+  Netherlands: "Países Bajos",
+  "New Zealand": "Nueva Zelanda",
+  Norway: "Noruega",
+  Panama: "Panamá",
+  Paraguay: "Paraguay",
+  Peru: "Perú",
+  Poland: "Polonia",
+  Portugal: "Portugal",
+  Qatar: "Qatar",
+  "Saudi Arabia": "Arabia Saudita",
+  Scotland: "Escocia",
+  Senegal: "Senegal",
+  Serbia: "Serbia",
+  "South Africa": "Sudáfrica",
+  Spain: "España",
+  Sweden: "Suecia",
+  Switzerland: "Suiza",
+  Tunisia: "Túnez",
+  Turkey: "Turquía",
+  Uruguay: "Uruguay",
+  USA: "Estados Unidos",
+  Uzbekistan: "Uzbekistán",
+  Venezuela: "Venezuela",
+  Wales: "Gales",
+  "Côte d'Ivoire": "Costa de Marfil",
 }
 
-export function getFlag(
-  teamName: string
-): string {
-  return (
-    FLAG_MAP[teamName] ??
-    "🏳️"
-  )
+// Devuelve la URL de la imagen de la bandera
+export function getFlagUrl(teamName: string): string {
+  const code = FLAG_CODE_MAP[teamName]
+  if (!code) return ""
+  return `https://flagcdn.com/w40/${code}.png`
+}
+
+// Devuelve el nombre del equipo en español
+export function getTeamNameEs(teamName: string): string {
+  return TEAM_NAME_ES[teamName] ?? teamName
 }
