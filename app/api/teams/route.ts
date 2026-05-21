@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 
-// Fuerza que este route nunca se cachee a nivel de Next.js
 export const dynamic = "force-dynamic"
 
 export async function GET() {
@@ -14,7 +13,7 @@ export async function GET() {
   }
 
   try {
-    const response = await fetch("https://api.wc2026api.com/groups", {
+    const response = await fetch("https://api.wc2026api.com/teams", {
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
@@ -32,9 +31,9 @@ export async function GET() {
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
-    console.error("Error obteniendo grupos:", error)
+    console.error("Error obteniendo equipos:", error)
     return NextResponse.json(
-      { error: "Error interno obteniendo grupos" },
+      { error: "Error interno obteniendo equipos" },
       { status: 500 }
     )
   }
