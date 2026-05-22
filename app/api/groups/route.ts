@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server"
 
-// Fuerza que este route nunca se cachee a nivel de Next.js
 export const dynamic = "force-dynamic"
 
 export async function GET() {
-  const apiKey = process.env.API_WC
+  const apiToken = process.env.API_WC_token
 
-  if (!apiKey) {
+  if (!apiToken) {
     return NextResponse.json(
-      { error: "API_WC no está configurada" },
+      { error: "API_WC_token no está configurada" },
       { status: 500 }
     )
   }
@@ -16,7 +15,7 @@ export async function GET() {
   try {
     const response = await fetch("https://api.wc2026api.com/groups", {
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: apiToken,
         "Content-Type": "application/json",
       },
       cache: "no-store",

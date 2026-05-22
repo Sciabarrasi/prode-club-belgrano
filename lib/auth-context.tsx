@@ -1,16 +1,16 @@
 "use client"
 
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-} from "react"
+import { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { PredictionResponse } from "./types"
 
 export interface User {
   id: string
+  ticketNumber: number
+  firstName: string
+  lastName: string
   username: string
   email: string
+  role: string
 }
 
 export interface Prediction {
@@ -20,275 +20,126 @@ export interface Prediction {
 
 interface AuthContextType {
   user: User | null
-  users: User[]
-  predictions: Record<string, Prediction[]>
   loading: boolean
-
-  login: (email: string, password: string) => boolean
-
-  register: (
-    username: string,
-    email: string,
-    password: string
-  ) => boolean
-
-  logout: () => void
-
-  savePredictions: (
-    predictions: Prediction[]
-  ) => void
-
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
+  logout: () => Promise<void>
+  predictions: Prediction[]
+  savePredictions: (predictions: Prediction[]) => void
+  refreshPredictions: () => Promise<void>
   hasCompletedPredictions: boolean
 }
 
-const AuthContext = createContext<
-  AuthContextType | undefined
->(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const mockUsers: {
-  user: User
-  password: string
-}[] = [
-  {
-    user: {
-      id: "1",
-      username: "Carlos",
-      email: "carlos@email.com",
-    },
-    password: "123456",
-  },
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [predictions, setPredictions] = useState<Prediction[]>([])
+  const [hasCompletedPredictions, setHasCompletedPredictions] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  {
-    user: {
-      id: "2",
-      username: "Maria",
-      email: "maria@email.com",
-    },
-    password: "123456",
-  },
-
-  {
-    user: {
-      id: "3",
-      username: "Juan",
-      email: "juan@email.com",
-    },
-    password: "123456",
-  },
-
-  {
-    user: {
-      id: "4",
-      username: "Admin",
-      email: "admin@prode.com",
-    },
-    password: "Pr0de#2026!",
-  },
-]
-
-const mockPredictions: Record<
-  string,
-  Prediction[]
-> = {
-  "1": [
-    {
-      matchId: "A1",
-      result: "home",
-    },
-    {
-      matchId: "A2",
-      result: "draw",
-    },
-    {
-      matchId: "A3",
-      result: "away",
-    },
-  ],
-
-  "2": [
-    {
-      matchId: "A1",
-      result: "draw",
-    },
-    {
-      matchId: "A2",
-      result: "home",
-    },
-    {
-      matchId: "A3",
-      result: "home",
-    },
-  ],
-
-  "3": [
-    {
-      matchId: "A1",
-      result: "away",
-    },
-    {
-      matchId: "A2",
-      result: "away",
-    },
-    {
-      matchId: "A3",
-      result: "draw",
-    },
-  ],
-}
-
-export function AuthProvider({
-  children,
-}: {
-  children: ReactNode
-}) {
-  const loading = false
-
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === "undefined") {
-      return null
-    }
-
-    const savedUser =
-      localStorage.getItem("prode_user")
-
-    return savedUser
-      ? JSON.parse(savedUser)
-      : null
-  })
-
-  const [users, setUsers] = useState<User[]>(
-    mockUsers.map((u) => u.user)
-  )
-
-  const [allPasswords, setAllPasswords] =
-    useState<Record<string, string>>(
-      mockUsers.reduce(
-        (acc, u) => ({
-          ...acc,
-          [u.user.email]: u.password,
-        }),
-        {}
-      )
-    )
-
-  const [predictions, setPredictions] =
-    useState<Record<string, Prediction[]>>(
-      mockPredictions
-    )
-
-  const [
-    hasCompletedPredictions,
-    setHasCompletedPredictions,
-  ] = useState<boolean>(() => {
-    if (typeof window === "undefined") {
-      return false
-    }
-
-    const savedUser =
-      localStorage.getItem("prode_user")
-
-    if (!savedUser) {
-      return false
-    }
-
-    const parsedUser: User =
-      JSON.parse(savedUser)
-
-    return !!mockPredictions[
-      parsedUser.id
-    ]?.length
-  })
-
-  const login = (
-    email: string,
-    password: string
-  ): boolean => {
-    const foundUser = users.find(
-      (u) => u.email === email
-    )
-
-    if (
-      foundUser &&
-      allPasswords[email] === password
-    ) {
-      setUser(foundUser)
-
-      localStorage.setItem(
-        "prode_user",
-        JSON.stringify(foundUser)
-      )
-
-      const hasPredictions =
-        !!predictions[foundUser.id]?.length
-
-      setHasCompletedPredictions(
-        hasPredictions
-      )
-
-      return true
-    }
-
-    return false
-  }
-
-  const register = (
-    username: string,
-    email: string,
-    password: string
-  ): boolean => {
-    const existingUser = users.find(
-      (u) => u.email === email
-    )
-
-    if (existingUser) {
-      return false
-    }
-
-    const newUser: User = {
-      id: String(users.length + 1),
-      username,
-      email,
-    }
-
-    setUsers([...users, newUser])
-
-    setAllPasswords({
-      ...allPasswords,
-      [email]: password,
-    })
-
-    setUser(newUser)
-
-    localStorage.setItem(
-      "prode_user",
-      JSON.stringify(newUser)
-    )
-
-    setHasCompletedPredictions(false)
-
-    return true
-  }
-
-  const logout = () => {
-    setUser(null)
-
-    setHasCompletedPredictions(false)
-
-    localStorage.removeItem("prode_user")
-  }
-
-  const savePredictions = (
-    userPredictions: Prediction[]
-  ) => {
+  // Función para cargar predicciones desde la API
+  const loadPredictions = async () => {
     if (!user) return
-
-    const updatedPredictions = {
-      ...predictions,
-      [user.id]: userPredictions,
+    
+    try {
+      const predRes = await fetch("/api/predictions")
+      if (predRes.ok) {
+        const predData: PredictionResponse[] = await predRes.json()
+        const loadedPredictions: Prediction[] = predData.map((p: PredictionResponse) => ({
+          matchId: p.matchId.toString(),
+          result: p.result,
+        }))
+        setPredictions(loadedPredictions)
+        setHasCompletedPredictions(loadedPredictions.length > 0)
+      } else {
+        setPredictions([])
+        setHasCompletedPredictions(false)
+      }
+    } catch (error) {
+      console.error("Error loading predictions:", error)
+      setPredictions([])
+      setHasCompletedPredictions(false)
     }
+  }
 
-    setPredictions(updatedPredictions)
+  // Función pública para refrescar predicciones
+  const refreshPredictions = async () => {
+    await loadPredictions()
+  }
 
+  // Al montar verifica si hay sesión activa via iron-session
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/users/me")
+        const data = await res.json()
+        if (data.user) {
+          setUser({
+            ...data.user,
+            username: `${data.user.firstName} ${data.user.lastName}`,
+          })
+          
+          // Cargar predicciones después de setear el usuario
+          await loadPredictions()
+        }
+      } catch {
+        // Sin sesión
+      } finally {
+        setLoading(false)
+      }
+    }
+    checkSession()
+  }, [])
+
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ ok: boolean; error?: string }> => {
+    try {
+      const res = await fetch("/api/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        return { ok: false, error: data.error ?? "Error al iniciar sesión" }
+      }
+
+      // Leer sesión para obtener datos del usuario
+      const meRes = await fetch("/api/users/me")
+      const meData = await meRes.json()
+
+      if (meData.user) {
+        setUser({
+          ...meData.user,
+          username: `${meData.user.firstName} ${meData.user.lastName}`,
+        })
+        
+        // Cargar predicciones después del login
+        await loadPredictions()
+      }
+
+      return { ok: true }
+    } catch {
+      return { ok: false, error: "Error de conexión" }
+    }
+  }
+
+  const logout = async () => {
+    try {
+      await fetch("/api/users/logout", { method: "POST" })
+    } finally {
+      setUser(null)
+      setPredictions([])
+      setHasCompletedPredictions(false)
+    }
+  }
+
+  const savePredictions = (newPredictions: Prediction[]) => {
+    setPredictions(newPredictions)
     setHasCompletedPredictions(true)
   }
 
@@ -296,16 +147,12 @@ export function AuthProvider({
     <AuthContext.Provider
       value={{
         user,
-        users,
-        predictions,
         loading,
-
         login,
-        register,
         logout,
-
+        predictions,
         savePredictions,
-
+        refreshPredictions,
         hasCompletedPredictions,
       }}
     >
@@ -316,12 +163,8 @@ export function AuthProvider({
 
 export function useAuth() {
   const context = useContext(AuthContext)
-
   if (context === undefined) {
-    throw new Error(
-      "useAuth must be used within an AuthProvider"
-    )
+    throw new Error("useAuth must be used within an AuthProvider")
   }
-
   return context
 }

@@ -1,8 +1,8 @@
 import { getFlagUrl, getTeamNameEs } from "@/lib/wc-api"
 
 export interface MatchTeam {
-  name: string      // nombre en español
-  nameEn: string    // nombre original en inglés (para el mapeo de banderas)
+  name: string
+  nameEn: string
   code: string
   flagUrl: string
 }
@@ -49,14 +49,29 @@ interface ApiGroup {
   name: string
 }
 
+let cachedMatches: Match[] | null = null
+let cachedGroups: Group[] | null = null
+let lastFetchTime = 0
+const CACHE_TTL = 24 * 60 * 60 * 1000
+
 export async function fetchGroupStageMatches(): Promise<Match[]> {
+  const now = Date.now()
+  
+  if (cachedMatches && (now - lastFetchTime) < CACHE_TTL) {
+    return cachedMatches
+  }
+
   try {
-    const response = await fetch("/api/matches", { cache: "no-store" })
+    const response = await fetch("/api/matches", { 
+      cache: "force-cache",
+      next: { revalidate: 3600 }
+    })
+    
     if (!response.ok) throw new Error(`Error al obtener partidos: ${response.status}`)
 
     const data: ApiMatch[] = await response.json()
 
-    return data.map((match) => ({
+    cachedMatches = data.map((match) => ({
       id: match.id,
       matchNumber: match.match_number,
       group: match.group_name,
@@ -80,21 +95,37 @@ export async function fetchGroupStageMatches(): Promise<Match[]> {
       homeScore: match.home_score,
       awayScore: match.away_score,
     }))
+    
+    lastFetchTime = now
+    return cachedMatches
   } catch (error) {
     console.error(error)
-    return []
+    return cachedMatches || []
   }
 }
 
 export async function fetchGroups(): Promise<Group[]> {
+  const now = Date.now()
+  
+  if (cachedGroups && (now - lastFetchTime) < CACHE_TTL) {
+    return cachedGroups
+  }
+
   try {
-    const response = await fetch("/api/groups", { cache: "no-store" })
+    const response = await fetch("/api/groups", { 
+      cache: "force-cache",
+      next: { revalidate: 3600 }
+    })
+    
     if (!response.ok) throw new Error(`Error al obtener grupos: ${response.status}`)
+    
     const data: ApiGroup[] = await response.json()
-    return data
+    cachedGroups = data
+    lastFetchTime = now
+    return cachedGroups
   } catch (error) {
     console.error(error)
-    return []
+    return cachedGroups || []
   }
 }
 
@@ -106,5 +137,10 @@ export function getMatchesByGroup(matches: Match[], group: string): Match[] {
   return matches.filter((m) => m.group === group)
 }
 
-// Alias para compatibilidad con cargarParticipante/page.tsx
 export const fetchMatches = fetchGroupStageMatches
+
+export function invalidateStaticCache() {
+  cachedMatches = null
+  cachedGroups = null
+  lastFetchTime = 0
+}

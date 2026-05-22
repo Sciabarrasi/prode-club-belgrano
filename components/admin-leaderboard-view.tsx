@@ -2,59 +2,95 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useLeaderboardData } from "@/hooks/useLeaderboardData"
-import { getMatchesByGroup } from "@/lib/matches-data"
+import {
+  fetchGroups,
+  fetchGroupStageMatches,
+  getMatchesByGroup,
+  Group,
+  Match,
+} from "@/lib/matches-data"
 import { MatchCard } from "@/components/match-card"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
-interface LeaderboardViewProps {
+interface DbPrediction {
+  matchId: number
+  result: string
+  pointsEarned: number
+  scored: boolean
+}
+
+interface DbUser {
+  id: string
+  firstName: string
+  lastName: string
+  ticketNumber: number
+  points: number
+  phone: string // En admin siempre viene
+  predictions: DbPrediction[]
+}
+
+interface AdminLeaderboardViewProps {
   currentUserId: string
+  currentUserRole: string
   onLogout: () => void
 }
 
-export function LeaderboardView({ currentUserId, onLogout }: LeaderboardViewProps) {
-  const { users, groups, matches, loading, error, refresh } = useLeaderboardData()
+export function AdminLeaderboardView({ currentUserId, currentUserRole, onLogout }: AdminLeaderboardViewProps) {
+  const [users, setUsers] = useState<DbUser[]>([])
+  const [groups, setGroups] = useState<Group[]>([])
+  const [matches, setMatches] = useState<Match[]>([])
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  const [selectedGroup, setSelectedGroup] = useState<string>("")
+  const [selectedGroup, setSelectedGroup] = useState("")
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    refresh()
-  }, [refresh])
+    async function loadData() {
+      try {
+        const [usersRes, groupsData, matchesData] = await Promise.all([
+          fetch("/api/leaderboard").then((r) => r.json()),
+          fetchGroups(),
+          fetchGroupStageMatches(),
+        ])
+
+        setUsers(usersRes)
+        setGroups(groupsData)
+        setMatches(matchesData)
+
+        if (groupsData.length > 0) {
+          setSelectedGroup(groupsData[0].name)
+        }
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
 
   const selectedUser = users.find((u) => u.id === selectedUserId)
 
-  const getPrediction = (matchId: number) => {
+  const getPrediction = (matchId: string) => {
     if (!selectedUser) return undefined
     const pred = selectedUser.predictions.find(
-      (p) => p.matchId === matchId
+      (p) => p.matchId === Number(matchId)
     )
     if (!pred) return undefined
     return {
-      matchId: matchId.toString(),
+      matchId: matchId,
       result: pred.result as "home" | "draw" | "away",
     }
   }
 
-  const activeGroup = selectedGroup || (groups.length > 0 ? groups[0].name : "")
-  const currentMatches = getMatchesByGroup(matches, activeGroup)
+  const currentMatches = getMatchesByGroup(matches, selectedGroup)
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-destructive">{error}</p>
-          <Button onClick={refresh} className="mt-4">Reintentar</Button>
-        </div>
       </div>
     )
   }
@@ -65,8 +101,10 @@ export function LeaderboardView({ currentUserId, onLogout }: LeaderboardViewProp
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-primary">Prode Mundial 2026</h1>
-              <p className="text-sm text-muted-foreground">Tabla de Posiciones</p>
+              <h1 className="text-xl font-bold text-primary">
+                Prode Mundial 2026 - {currentUserRole === "SUPERADMIN" ? "Superadmin" : "Admin"}
+              </h1>
+              <p className="text-sm text-muted-foreground">Tabla de Posiciones con teléfonos</p>
             </div>
             <div className="flex items-center gap-2">
               <Link href="/predicciones">
@@ -82,6 +120,7 @@ export function LeaderboardView({ currentUserId, onLogout }: LeaderboardViewProp
 
       <main className="container mx-auto px-4 py-6">
         <div className="grid gap-6 lg:grid-cols-3">
+          {/* Lista de participantes con teléfono */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
@@ -100,21 +139,27 @@ export function LeaderboardView({ currentUserId, onLogout }: LeaderboardViewProp
                           : "hover:bg-secondary/50"
                       )}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary font-bold text-sm">
-                          {index + 1}
-                        </span>
-                        <div>
-                          <p className={cn(
-                            "font-medium",
-                            u.id === currentUserId ? "text-primary" : ""
-                          )}>
-                            {u.firstName} {u.lastName}
-                            {u.id === currentUserId && " (Vos)"}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Cartón #{u.ticketNumber} · {u.predictions.length} predicciones
-                          </p>
+                      <div className="flex flex-col gap-1 flex-1">
+                        <div className="flex items-center gap-3">
+                          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary font-bold text-sm">
+                            {index + 1}
+                          </span>
+                          <div>
+                            <p className={cn(
+                              "font-medium",
+                              u.id === currentUserId ? "text-primary" : ""
+                            )}>
+                              {u.firstName} {u.lastName}
+                              {u.id === currentUserId && " (Vos)"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Cartón #{u.ticketNumber} · {u.predictions.length} predicciones
+                            </p>
+                          </div>
+                        </div>
+                        {/* Teléfono mostrado claramente para admin */}
+                        <div className="ml-11 text-sm text-muted-foreground">
+                          📞 {u.phone}
                         </div>
                       </div>
                       <div className="text-right">
@@ -134,6 +179,7 @@ export function LeaderboardView({ currentUserId, onLogout }: LeaderboardViewProp
             </Card>
           </div>
 
+          {/* Predicciones del usuario seleccionado */}
           <div className="lg:col-span-2">
             {selectedUserId && selectedUser ? (
               <div>
@@ -150,20 +196,18 @@ export function LeaderboardView({ currentUserId, onLogout }: LeaderboardViewProp
                   </Button>
                 </div>
 
-                {groups.length > 0 && (
-                  <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
-                    {groups.map((group) => (
-                      <Button
-                        key={group.id}
-                        variant={activeGroup === group.name ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSelectedGroup(group.name)}
-                      >
-                        {group.name}
-                      </Button>
-                    ))}
-                  </div>
-                )}
+                <div className="flex gap-2 overflow-x-auto pb-4 mb-4">
+                  {groups.map((group) => (
+                    <Button
+                      key={group.id}
+                      variant={selectedGroup === group.name ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedGroup(group.name)}
+                    >
+                      {group.name}
+                    </Button>
+                  ))}
+                </div>
 
                 {selectedUser.predictions.length === 0 ? (
                   <Card>
@@ -174,29 +218,17 @@ export function LeaderboardView({ currentUserId, onLogout }: LeaderboardViewProp
                     </CardContent>
                   </Card>
                 ) : (
-                  <>
-                    {currentMatches.length === 0 ? (
-                      <Card>
-                        <CardContent className="text-center py-12">
-                          <p className="text-muted-foreground">
-                            No hay partidos en el grupo {activeGroup}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    ) : (
-                      <div className="grid gap-4 md:grid-cols-2">
-                        {currentMatches.map((match) => (
-                          <MatchCard
-                            key={match.id}
-                            match={match}
-                            prediction={getPrediction(match.id)}
-                            onPrediction={() => {}}
-                            readOnly
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {currentMatches.map((match) => (
+                      <MatchCard
+                        key={match.id}
+                        match={match}
+                        prediction={getPrediction(match.id.toString())}
+                        onPrediction={() => {}}
+                        readOnly
+                      />
+                    ))}
+                  </div>
                 )}
               </div>
             ) : (

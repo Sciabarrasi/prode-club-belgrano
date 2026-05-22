@@ -11,15 +11,13 @@ export default function TablaPage() {
 
   useEffect(() => {
     if (loading) return
-    if (!user) {
-      router.replace("/")
-    }
+    if (!user) router.replace("/")
   }, [user, loading, router])
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-foreground">Cargando...</p>
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -31,5 +29,10 @@ export default function TablaPage() {
     router.replace("/")
   }
 
-  return <LeaderboardView onLogout={handleLogout} />
+  return (
+    <LeaderboardView
+      currentUserId={user.id}
+      onLogout={handleLogout}
+    />
+  )
 }

@@ -1,6 +1,7 @@
+// app/predicciones/page.tsx
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "@/hooks/useSession"
 import { PredictionsView } from "@/components/predictions-view"
@@ -8,6 +9,7 @@ import { PredictionsView } from "@/components/predictions-view"
 export default function PrediccionesPage() {
   const { user, loading } = useSession()
   const router = useRouter()
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     if (loading) return
@@ -45,7 +47,7 @@ export default function PrediccionesPage() {
           Cerrar sesión
         </button>
       </div>
-      <PredictionsView onComplete={handleComplete} />
+      <PredictionsView key={refreshKey} onComplete={handleComplete} />
     </div>
   )
 }
