@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    // Obtener sesión para saber el rol del usuario
     const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
     const isAdmin = session.user?.role === "ADMIN" || session.user?.role === "SUPERADMIN"
 
@@ -19,20 +18,32 @@ export async function GET() {
         lastName: true,
         ticketNumber: true,
         points: true,
-        phone: isAdmin, // Solo incluir teléfono si es admin
+        phone: isAdmin,
         predictions: {
           select: {
             matchId: true,
-            result: true,
+            predictedHome: true,
+            predictedAway: true,
             pointsEarned: true,
-            scored: true,
           },
         },
       },
       orderBy: { points: "desc" },
     })
 
-    return NextResponse.json(users)
+    const decoded = users.map((u) => ({
+      ...u,
+      predictions: u.predictions.map((p) => ({
+        matchId: p.matchId,
+        result:
+          p.predictedHome === 1 ? "home" :
+          p.predictedAway === 1 ? "away" :
+          "draw",
+        pointsEarned: p.pointsEarned,
+      })),
+    }))
+
+    return NextResponse.json(decoded)
   } catch (error) {
     console.error("[LEADERBOARD ERROR]", error)
     return NextResponse.json(
