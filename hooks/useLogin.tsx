@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 
 interface LoginData {
   email: string
@@ -9,15 +8,14 @@ interface LoginData {
 interface UseLoginReturn {
   loading: boolean
   error: string
-  login: (data: LoginData) => Promise<boolean>
+  login: (data: LoginData) => Promise<{ success: boolean; role?: string }>
 }
 
 export function useLogin(): UseLoginReturn {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const router = useRouter()
 
-  const login = async ({ email, password }: LoginData): Promise<boolean> => {
+  const login = async ({ email, password }: LoginData): Promise<{ success: boolean; role?: string }> => {
     setError("")
     setLoading(true)
 
@@ -32,14 +30,13 @@ export function useLogin(): UseLoginReturn {
 
       if (!res.ok) {
         setError(data.error ?? "Credenciales incorrectas")
-        return false
+        return { success: false }
       }
 
-      router.replace("/predicciones")
-      return true
+      return { success: true, role: data.user.role }
     } catch {
       setError("Error de conexión. Intenta de nuevo.")
-      return false
+      return { success: false }
     } finally {
       setLoading(false)
     }
