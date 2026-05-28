@@ -57,8 +57,11 @@ export function AuthModal({ mode, onClose, onSwitchMode }: AuthModalProps) {
       return;
     }
 
-    const success = await login({ email, password });
-    if (success) handleSuccess();
+    const { success, role } = await login({ email, password });
+    if (success) {
+      const destination = role === "ADMIN" || role === "SUPERADMIN" ? "/dashboard" : "/predicciones";
+      router.replace(destination)
+    }
   };
 
   return (
