@@ -5,6 +5,9 @@ import { Prediction } from "@/lib/auth-context"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
+// IDs de partidos que dan el doble de puntos
+const DOUBLE_POINTS_MATCH_IDS = new Set([13, 21, 32, 39, 46, 54, 66])
+
 interface MatchCardProps {
   match: Match
   prediction?: Prediction
@@ -45,9 +48,23 @@ export function MatchCard({
     minute: "2-digit",
   })
 
+  const isDoublePoints = DOUBLE_POINTS_MATCH_IDS.has(match.id)
+
   return (
-    <Card className="border-border bg-card overflow-hidden">
+    <Card className={cn(
+      "border-border bg-card overflow-hidden",
+      isDoublePoints && "border-yellow-500/50"
+    )}>
       <CardContent className="p-4">
+        {/* Badge doble puntos */}
+        {isDoublePoints && (
+          <div className="flex justify-center mb-2">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-500/15 border border-yellow-500/40 text-yellow-400 text-xs font-semibold">
+              ⭐ Este partido vale el doble de puntos
+            </span>
+          </div>
+        )}
+
         <div className="text-xs text-muted-foreground text-center mb-3">
           {formattedDate}
         </div>
