@@ -40,8 +40,10 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
           fetchGroups(),
           fetchGroupStageMatches(),
         ])
+
         setGroups(groupsData)
         setMatches(matchesData)
+
         if (groupsData.length > 0) {
           setSelectedGroup(groupsData[0].name)
         }
@@ -52,6 +54,7 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
         setLoading(false)
       }
     }
+
     loadData()
   }, [])
 
@@ -59,9 +62,13 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
   const handlePrediction = (matchId: string, result: "home" | "draw" | "away") => {
     setLocalPredictions((prev) => {
       const existing = prev.find((p) => p.matchId === matchId)
+
       if (existing) {
-        return prev.map((p) => p.matchId === matchId ? { ...p, result } : p)
+        return prev.map((p) =>
+          p.matchId === matchId ? { ...p, result } : p
+        )
       }
+
       return [...prev, { matchId, result }]
     })
   }
@@ -99,8 +106,10 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
       }
 
       savePredictions(localPredictions)
+
       await refreshPredictions()
       await refreshLeaderboard()
+
       onComplete()
     } catch (err) {
       console.error(err)
@@ -115,7 +124,9 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-muted-foreground text-sm">Cargando partidos del Mundial 2026…</p>
+          <p className="text-muted-foreground text-sm">
+            Cargando partidos del Mundial 2026…
+          </p>
         </div>
       </div>
     )
@@ -127,15 +138,27 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-primary">Mundial 2026</h1>
-              <p className="text-sm text-muted-foreground">Hola, {user?.username}</p>
+              <h1 className="text-xl font-bold text-primary">
+                Mundial 2026
+              </h1>
+
+              <p className="text-sm text-muted-foreground">
+                Hola, {user?.username}
+              </p>
             </div>
+
             <div className="flex items-center gap-4">
               <Link href="/tabla">
-                <Button variant="outline">Ver Tabla</Button>
+                <Button variant="outline">
+                  Ver Tabla
+                </Button>
               </Link>
+
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">Predicciones</p>
+                <p className="text-sm text-muted-foreground">
+                  Predicciones
+                </p>
+
                 <p className="text-lg font-bold text-primary">
                   {localPredictions.length} / {totalMatches}
                 </p>
@@ -146,7 +169,9 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
       </header>
 
       <main className="container mx-auto px-4 py-6 pb-28">
-        <h2 className="text-lg font-semibold mb-4">Fase de Grupos</h2>
+        <h2 className="text-lg font-semibold mb-4">
+          Fase de Grupos
+        </h2>
 
         <div className="flex gap-2 overflow-x-auto pb-4">
           {groups.map((group) => (
@@ -173,7 +198,9 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
         </div>
 
         {error && (
-          <p className="text-destructive text-sm text-center mt-4">{error}</p>
+          <p className="text-destructive text-sm text-center mt-4">
+            {error}
+          </p>
         )}
       </main>
 
