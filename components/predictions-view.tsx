@@ -21,12 +21,16 @@ interface PredictionsViewProps {
 
 export function PredictionsView({ onComplete }: PredictionsViewProps) {
   const { user, predictions: savedPredictions, savePredictions, refreshPredictions } = useAuth()
+  console.log("savedPredictions al montar:", savedPredictions)
   const { refresh: refreshLeaderboard } = useLeaderboardData()
+  
 
   const [groups, setGroups] = useState<Group[]>([])
   const [matches, setMatches] = useState<Match[]>([])
   const [selectedGroup, setSelectedGroup] = useState("")
-  const [localPredictions, setLocalPredictions] = useState<Prediction[]>([])
+  // Inicializa con las predicciones guardadas del usuario actual
+  const [localPredictions, setLocalPredictions] = useState<Prediction[]>(savedPredictions)
+  console.log("localPredictions inicial:", localPredictions)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -56,10 +60,6 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
     loadData()
   }, [])
 
-  // FIX: sincronizar predicciones cuando llegan desde useAuth
-  useEffect(() => {
-    setLocalPredictions(savedPredictions)
-  }, [savedPredictions])
 
   const handlePrediction = (matchId: string, result: "home" | "draw" | "away") => {
     setLocalPredictions((prev) => {
@@ -81,9 +81,8 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
 
   const currentMatches = getMatchesByGroup(matches, selectedGroup)
   const totalMatches = matches.length
-
-  const allPredictionsMade =
-    localPredictions.length === totalMatches && totalMatches > 0
+  const allPredictionsMade = localPredictions.length === totalMatches && totalMatches > 0
+  const isUpdating = savedPredictions.length > 0
 
   const handleSubmit = async () => {
     if (!allPredictionsMade || !user) return
@@ -220,11 +219,7 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
                 Guardando…
               </span>
             ) : allPredictionsMade ? (
-              localPredictions.length > 0 &&
-              localPredictions.length === totalMatches &&
-              savedPredictions.length > 0
-                ? "Actualizar Predicciones"
-                : "Confirmar Predicciones"
+              isUpdating ? "Actualizar Predicciones" : "Confirmar Predicciones"
             ) : (
               `Faltan ${totalMatches - localPredictions.length} predicciones`
             )}

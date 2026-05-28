@@ -1,15 +1,13 @@
-// app/predicciones/page.tsx
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/hooks/useSession"
+import { useAuth } from "@/lib/auth-context"
 import { PredictionsView } from "@/components/predictions-view"
 
 export default function PrediccionesPage() {
-  const { user, loading } = useSession()
+  const { user, loading } = useAuth()
   const router = useRouter()
-  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     if (loading) return
@@ -26,7 +24,7 @@ export default function PrediccionesPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-foreground">Cargando...</p>
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -47,7 +45,7 @@ export default function PrediccionesPage() {
           Cerrar sesión
         </button>
       </div>
-      <PredictionsView key={refreshKey} onComplete={handleComplete} />
+      <PredictionsView onComplete={handleComplete} />
     </div>
   )
 }

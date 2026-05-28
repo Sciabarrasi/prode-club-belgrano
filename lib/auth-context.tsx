@@ -37,20 +37,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [hasCompletedPredictions, setHasCompletedPredictions] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  // Función para cargar predicciones desde la API
-  const loadPredictions = async () => {
-    if (!user) return
-    
+  // Recibe el userId explícitamente para evitar el problema del closure con el estado
+  const loadPredictionsForUser = async (_userId: string) => {
     try {
       const predRes = await fetch("/api/predictions")
       if (predRes.ok) {
         const predData: PredictionResponse[] = await predRes.json()
-        const loadedPredictions: Prediction[] = predData.map((p: PredictionResponse) => ({
+        const loaded: Prediction[] = predData.map((p: PredictionResponse) => ({
           matchId: p.matchId.toString(),
           result: p.result,
         }))
-        setPredictions(loadedPredictions)
-        setHasCompletedPredictions(loadedPredictions.length > 0)
+        setPredictions(loaded)
+        setHasCompletedPredictions(loaded.length > 0)
       } else {
         setPredictions([])
         setHasCompletedPredictions(false)
@@ -62,25 +60,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Función pública para refrescar predicciones
+  // Usa el user del estado (para llamadas posteriores al login)
   const refreshPredictions = async () => {
-    await loadPredictions()
+    if (!user) return
+    await loadPredictionsForUser(user.id)
   }
 
-  // Al montar verifica si hay sesión activa via iron-session
   useEffect(() => {
     async function checkSession() {
       try {
         const res = await fetch("/api/users/me")
         const data = await res.json()
+
         if (data.user) {
-          setUser({
+          const sessionUser: User = {
             ...data.user,
             username: `${data.user.firstName} ${data.user.lastName}`,
-          })
-          
-          // Cargar predicciones después de setear el usuario
-          await loadPredictions()
+          }
+          setUser(sessionUser)
+          // Pasamos el id directo, no dependemos del estado
+          await loadPredictionsForUser(sessionUser.id)
         }
       } catch {
         // Sin sesión
@@ -108,18 +107,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { ok: false, error: data.error ?? "Error al iniciar sesión" }
       }
 
-      // Leer sesión para obtener datos del usuario
       const meRes = await fetch("/api/users/me")
       const meData = await meRes.json()
 
       if (meData.user) {
-        setUser({
+        const loggedUser: User = {
           ...meData.user,
           username: `${meData.user.firstName} ${meData.user.lastName}`,
-        })
-        
-        // Cargar predicciones después del login
-        await loadPredictions()
+        }
+        setUser(loggedUser)
+        // Limpiamos predicciones anteriores antes de cargar las nuevas
+        setPredictions([])
+        setHasCompletedPredictions(false)
+        // Pasamos el id directo del usuario recién logueado
+        await loadPredictionsForUser(loggedUser.id)
       }
 
       return { ok: true }
