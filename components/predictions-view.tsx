@@ -21,7 +21,6 @@ interface PredictionsViewProps {
 
 export function PredictionsView({ onComplete }: PredictionsViewProps) {
   const { user, predictions: savedPredictions, savePredictions, refreshPredictions } = useAuth()
-  console.log("savedPredictions al montar:", savedPredictions)
   const { refresh: refreshLeaderboard } = useLeaderboardData()
   
 
@@ -30,7 +29,6 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
   const [selectedGroup, setSelectedGroup] = useState("")
   // Inicializa con las predicciones guardadas del usuario actual
   const [localPredictions, setLocalPredictions] = useState<Prediction[]>(savedPredictions)
-  console.log("localPredictions inicial:", localPredictions)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
