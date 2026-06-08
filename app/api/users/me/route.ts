@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server"
-import { getIronSession } from "iron-session"
-import { sessionOptions, SessionData } from "@/lib/session"
-import { cookies } from "next/headers"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
+    const session = await auth()
 
-    if (!session.user) {
+    if (!session?.user) {
       return NextResponse.json({ user: null })
     }
 

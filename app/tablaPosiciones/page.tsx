@@ -2,16 +2,16 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/hooks/useSession"
+import { signOut } from "next-auth/react"
+import { useAuth } from "@/lib/auth-context"
 import { AdminLeaderboardView } from "@/components/admin-leaderboard-view"
 
 export default function TablaPosicionesPage() {
-  const { user, loading } = useSession()
+  const { user, loading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
     if (loading) return
-    // Solo ADMIN o SUPERADMIN pueden entrar
     if (!user || (user.role !== "ADMIN" && user.role !== "SUPERADMIN")) {
       router.replace("/")
     }
@@ -28,7 +28,7 @@ export default function TablaPosicionesPage() {
   if (!user) return null
 
   const handleLogout = async () => {
-    await fetch("/api/users/logout", { method: "POST" })
+    await signOut({ redirect: false })
     router.replace("/")
   }
 

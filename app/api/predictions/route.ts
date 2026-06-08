@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getIronSession } from "iron-session"
-import { sessionOptions, SessionData } from "@/lib/session"
-import { cookies } from "next/headers"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 
 interface PredictionInput {
@@ -17,9 +15,9 @@ const resultEncoding = {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
+    const session = await auth()
 
-    if (!session.user) {
+    if (!session?.user) {
       return NextResponse.json({ error: "No autenticado" }, { status: 401 })
     }
 
@@ -64,9 +62,9 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
-    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
+    const session = await auth()
 
-    if (!session.user) {
+    if (!session?.user) {
       return NextResponse.json({ error: "No autenticado" }, { status: 401 })
     }
 
@@ -80,7 +78,6 @@ export async function GET() {
       },
     })
 
-    // Decodificamos de vuelta a "home" | "draw" | "away" para el frontend
     const decoded = predictions.map((p) => ({
       matchId: p.matchId,
       result:

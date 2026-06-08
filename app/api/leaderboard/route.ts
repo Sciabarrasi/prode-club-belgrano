@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getIronSession } from "iron-session"
-import { sessionOptions, SessionData } from "@/lib/session"
-import { cookies } from "next/headers"
+import { auth } from "@/auth"
 
 export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
-    const isAdmin = session.user?.role === "ADMIN" || session.user?.role === "SUPERADMIN"
+    const session = await auth()
+    const isAdmin = session?.user?.role === "ADMIN" || session?.user?.role === "SUPERADMIN"
 
     const users = await prisma.user.findMany({
       select: {
