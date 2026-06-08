@@ -1,17 +1,8 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { useSession, signIn, signOut } from "next-auth/react"
 import { PredictionResponse } from "./types"
-
-export interface User {
-  id: string
-  ticketNumber: number
-  firstName: string
-  lastName: string
-  username: string
-  email: string
-  role: string
-}
 
 export interface Prediction {
   matchId: string
@@ -19,7 +10,15 @@ export interface Prediction {
 }
 
 interface AuthContextType {
-  user: User | null
+  user: {
+    id: string
+    ticketNumber: number
+    firstName: string
+    lastName: string
+    username: string
+    email: string
+    role: string
+  } | null
   loading: boolean
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   logout: () => Promise<void>
@@ -32,13 +31,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const { data: session, status } = useSession()
   const [predictions, setPredictions] = useState<Prediction[]>([])
   const [hasCompletedPredictions, setHasCompletedPredictions] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [predictionsLoading, setPredictionsLoading] = useState(false)
 
-  // Recibe el userId explícitamente para evitar el problema del closure con el estado
-  const loadPredictionsForUser = async (_userId: string) => {
+  const loading = status === "loading" || predictionsLoading
+
+  const loadPredictions = async () => {
     try {
       const predRes = await fetch("/api/predictions")
       if (predRes.ok) {
@@ -60,89 +60,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  // Usa el user del estado (para llamadas posteriores al login)
-  const refreshPredictions = async () => {
-    if (!user) return
-    await loadPredictionsForUser(user.id)
-  }
-
   useEffect(() => {
-    async function checkSession() {
-      try {
-        const res = await fetch("/api/users/me")
-        const data = await res.json()
-
-        if (data.user) {
-          const sessionUser: User = {
-            ...data.user,
-            username: `${data.user.firstName} ${data.user.lastName}`,
-          }
-          setUser(sessionUser)
-          // Pasamos el id directo, no dependemos del estado
-          await loadPredictionsForUser(sessionUser.id)
-        }
-      } catch {
-        // Sin sesión
-      } finally {
-        setLoading(false)
-      }
+    if (status === "authenticated") {
+      setPredictionsLoading(true)
+      loadPredictions().finally(() => setPredictionsLoading(false))
+    } else if (status === "unauthenticated") {
+      setPredictions([])
+      setHasCompletedPredictions(false)
     }
-    checkSession()
-  }, [])
+  }, [status])
+
+  const refreshPredictions = async () => {
+    if (!session) return
+    await loadPredictions()
+  }
 
   const login = async (
     email: string,
     password: string
   ): Promise<{ ok: boolean; error?: string }> => {
-    try {
-      const res = await fetch("/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      })
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    })
 
-      const data = await res.json()
-
-      if (!res.ok) {
-        return { ok: false, error: data.error ?? "Error al iniciar sesión" }
-      }
-
-      const meRes = await fetch("/api/users/me")
-      const meData = await meRes.json()
-
-      if (meData.user) {
-        const loggedUser: User = {
-          ...meData.user,
-          username: `${meData.user.firstName} ${meData.user.lastName}`,
-        }
-        setUser(loggedUser)
-        // Limpiamos predicciones anteriores antes de cargar las nuevas
-        setPredictions([])
-        setHasCompletedPredictions(false)
-        // Pasamos el id directo del usuario recién logueado
-        await loadPredictionsForUser(loggedUser.id)
-      }
-
-      return { ok: true }
-    } catch {
-      return { ok: false, error: "Error de conexión" }
+    if (!result || result.error) {
+      return { ok: false, error: "Credenciales incorrectas" }
     }
+
+    return { ok: true }
+    // las predicciones se cargan solas via el useEffect cuando status cambia a "authenticated"
   }
 
   const logout = async () => {
-    try {
-      await fetch("/api/users/logout", { method: "POST" })
-    } finally {
-      setUser(null)
-      setPredictions([])
-      setHasCompletedPredictions(false)
-    }
+    setPredictions([])
+    setHasCompletedPredictions(false)
+    await signOut({ redirect: false })
   }
 
   const savePredictions = (newPredictions: Prediction[]) => {
     setPredictions(newPredictions)
     setHasCompletedPredictions(true)
   }
+
+  const user = session?.user
+    ? {
+        id: session.user.id,
+        ticketNumber: session.user.ticketNumber,
+        firstName: session.user.firstName,
+        lastName: session.user.lastName,
+        username: `${session.user.firstName} ${session.user.lastName}`,
+        email: session.user.email ?? "",
+        role: session.user.role,
+      }
+    : null
 
   return (
     <AuthContext.Provider

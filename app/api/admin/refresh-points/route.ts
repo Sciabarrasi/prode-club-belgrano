@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getIronSession } from "iron-session"
-import { sessionOptions, SessionData } from "@/lib/session"
-import { cookies } from "next/headers"
+import { auth } from "@/auth"
 import { getMatchWinner } from "@/lib/get-match-winner"
 import { invalidateStaticCache } from "@/lib/matches-data"
 
 export async function POST() {
   try {
-    // Solo ADMIN o SUPERADMIN
-    const session = await getIronSession<SessionData>(await cookies(), sessionOptions)
-    const role = session.user?.role
+    const session = await auth()
+    const role = session?.user?.role
 
     if (role !== "ADMIN" && role !== "SUPERADMIN") {
       return NextResponse.json(
@@ -19,14 +16,8 @@ export async function POST() {
       )
     }
 
-    // =========================
-    // INVALIDAR CACHÉ DE DATOS ESTÁTICOS
-    // =========================
     invalidateStaticCache()
 
-    // =========================
-    // PRODUCCIÓN
-    // =========================
     const res = await fetch("https://api.wc2026api.com/matches", {
       headers: {
         Authorization: process.env.API_WC_token ?? "",
@@ -46,9 +37,6 @@ export async function POST() {
 
     const matches = await res.json()
 
-    // =========================
-    // SOLO FINALIZADOS
-    // =========================
     const finishedMatches = matches.filter(
       (m: {
         status: string
@@ -69,16 +57,11 @@ export async function POST() {
 
     let totalUpdated = 0
 
-    // =========================
-    // CALCULAR PUNTOS
-    // =========================
     for (const match of finishedMatches) {
       const matchId = match.id
       const realWinner = getMatchWinner(match)
 
-      if (!realWinner) {
-        continue
-      }
+      if (!realWinner) continue
 
       const predictions = await prisma.prediction.findMany({
         where: {
@@ -93,34 +76,19 @@ export async function POST() {
         if (acertó) {
           await prisma.$transaction([
             prisma.prediction.update({
-              where: {
-                id: prediction.id,
-              },
-              data: {
-                scored: true,
-                pointsEarned: 1,
-              },
+              where: { id: prediction.id },
+              data: { scored: true, pointsEarned: 1 },
             }),
             prisma.user.update({
-              where: {
-                id: prediction.userId,
-              },
-              data: {
-                points: {
-                  increment: 1,
-                },
-              },
+              where: { id: prediction.userId },
+              data: { points: { increment: 1 } },
             }),
           ])
           totalUpdated++
         } else {
           await prisma.prediction.update({
-            where: {
-              id: prediction.id,
-            },
-            data: {
-              scored: true,
-            },
+            where: { id: prediction.id },
+            data: { scored: true },
           })
         }
       }

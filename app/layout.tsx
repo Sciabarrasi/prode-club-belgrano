@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { SessionProvider } from "next-auth/react"
 import { AuthProvider } from "@/lib/auth-context"
 import "./globals.css"
 
@@ -46,9 +47,11 @@ export default function RootLayout({
       <body
         className={`${geist.variable} ${geistMono.variable} font-sans antialiased min-h-screen bg-background text-foreground`}
       >
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <SessionProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </SessionProvider>
 
         {process.env.NODE_ENV === "production" && <Analytics />}
       </body>

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "@/hooks/useSession"
+import { signOut } from "next-auth/react"
+import { useAuth } from "@/lib/auth-context"
 import Link from "next/link"
 import {
   Card,
@@ -14,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 
 export default function DashboardPage() {
-  const { user, loading } = useSession()
+  const { user, loading } = useAuth()
   const router = useRouter()
   const [refreshing, setRefreshing] = useState(false)
   const [refreshResult, setRefreshResult] = useState<string | null>(null)
@@ -44,7 +45,7 @@ export default function DashboardPage() {
   }
 
   const handleLogout = async () => {
-    await fetch("/api/users/logout", { method: "POST" })
+    await signOut({ redirect: false })
     router.replace("/")
   }
 

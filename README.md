@@ -2,13 +2,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-revisar por que el botón de cargar predicciones no funciona en local ni en prod // YA ANDA
-
-revisar por que toma las predicciones del usuario anterior en lugar del usuario nuevo
-conectar la base de datos nueva
-
-revisar por que la api no funciona en production
-
 conteo de puntos: 
 mex vs sudafrica | un ejemplo es, jona pone cual partida suma por dos.
 

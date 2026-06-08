@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { signOut } from "next-auth/react"
 import { useAuth } from "@/lib/auth-context"
 import { PredictionsView } from "@/components/predictions-view"
 
@@ -17,7 +18,7 @@ export default function PrediccionesPage() {
   }, [user, loading, router])
 
   const handleLogout = async () => {
-    await fetch("/api/users/logout", { method: "POST" })
+    await signOut({ redirect: false })
     router.replace("/")
   }
 
