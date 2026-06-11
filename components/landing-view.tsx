@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button"
 
 interface LandingViewProps {
   onLogin: () => void
-  onRegister: () => void
 }
 
-export function LandingView({ onLogin, onRegister }: LandingViewProps) {
+export function LandingView({ onLogin }: LandingViewProps) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center px-4">
@@ -24,17 +23,9 @@ export function LandingView({ onLogin, onRegister }: LandingViewProps) {
 
           <div className="flex flex-col gap-4 w-full max-w-xs mx-auto">
             <Button
-              onClick={onRegister}
+              onClick={onLogin}
               size="lg"
               className="w-full bg-primary hover:bg-accent text-primary-foreground text-lg py-6"
-            >
-              Registrarse
-            </Button>
-            <Button
-              onClick={onLogin}
-              variant="outline"
-              size="lg"
-              className="w-full border-border text-card-foreground hover:bg-secondary text-lg py-6"
             >
               Iniciar Sesion
             </Button>

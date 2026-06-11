@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useAuth, Prediction } from "@/lib/auth-context"
-import { useLeaderboardData } from "@/hooks/useLeaderboardData"
 import {
   fetchGroupStageMatches,
   fetchGroups,
@@ -16,21 +15,17 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 interface PredictionsViewProps {
-  onComplete: () => void
+  onComplete?: () => void
 }
 
-export function PredictionsView({ onComplete }: PredictionsViewProps) {
-  const { user, predictions: savedPredictions, savePredictions, refreshPredictions } = useAuth()
-  const { refresh: refreshLeaderboard } = useLeaderboardData()
-  
+export function PredictionsView({}: PredictionsViewProps) {
+  const { user } = useAuth()
 
   const [groups, setGroups] = useState<Group[]>([])
   const [matches, setMatches] = useState<Match[]>([])
   const [selectedGroup, setSelectedGroup] = useState("")
-  // Inicializa con las predicciones guardadas del usuario actual
-  const [localPredictions, setLocalPredictions] = useState<Prediction[]>(savedPredictions)
+  const [localPredictions] = useState<Prediction[]>([])
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -58,19 +53,8 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
     loadData()
   }, [])
 
-
-  const handlePrediction = (matchId: string, result: "home" | "draw" | "away") => {
-    setLocalPredictions((prev) => {
-      const existing = prev.find((p) => p.matchId === matchId)
-
-      if (existing) {
-        return prev.map((p) =>
-          p.matchId === matchId ? { ...p, result } : p
-        )
-      }
-
-      return [...prev, { matchId, result }]
-    })
+  const handlePrediction = () => {
+    // Las predicciones ya no son editables
   }
 
   const getPrediction = (matchId: string) => {
@@ -79,45 +63,6 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
 
   const currentMatches = getMatchesByGroup(matches, selectedGroup)
   const totalMatches = matches.length
-  const allPredictionsMade = localPredictions.length === totalMatches && totalMatches > 0
-  const isUpdating = savedPredictions.length > 0
-
-  const handleSubmit = async () => {
-    if (!allPredictionsMade || !user) return
-
-    setSaving(true)
-    setError(null)
-
-    try {
-      const res = await fetch("/api/predictions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          predictions: localPredictions.map((p) => ({
-            matchId: Number(p.matchId),
-            result: p.result,
-          })),
-        }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error ?? "Error al guardar")
-      }
-
-      savePredictions(localPredictions)
-
-      await refreshPredictions()
-      await refreshLeaderboard()
-
-      onComplete()
-    } catch (err) {
-      console.error(err)
-      setError("No se pudieron guardar las predicciones. Intentá de nuevo.")
-    } finally {
-      setSaving(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -179,7 +124,7 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
               key={group.id}
               variant={selectedGroup === group.name ? "default" : "outline"}
               onClick={() => setSelectedGroup(group.name)}
-              className={cn("min-w-[100px]")}
+              className={cn("min-w-25")}
             >
               {group.name}
             </Button>
@@ -207,20 +152,10 @@ export function PredictionsView({ onComplete }: PredictionsViewProps) {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border">
         <div className="container mx-auto">
           <Button
-            onClick={handleSubmit}
-            disabled={!allPredictionsMade || saving}
+            disabled={true}
             className="w-full"
           >
-            {saving ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                Guardando…
-              </span>
-            ) : allPredictionsMade ? (
-              isUpdating ? "Actualizar Predicciones" : "Confirmar Predicciones"
-            ) : (
-              `Faltan ${totalMatches - localPredictions.length} predicciones`
-            )}
+            Ya no se permiten actualizaciones
           </Button>
         </div>
       </div>

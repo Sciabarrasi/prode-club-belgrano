@@ -2,10 +2,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-conteo de puntos: 
-mex vs sudafrica | un ejemplo es, jona pone cual partida suma por dos.
-
-
 First, run the development server:
 
 ```bash
