@@ -16,7 +16,6 @@ interface MatchData {
 export function getMatchWinner(
   match: MatchData
 ): MatchWinner | null {
-  // Si la API ya trae winner
   if (match.winner) {
     const winner =
       match.winner.toLowerCase()
@@ -30,7 +29,6 @@ export function getMatchWinner(
     }
   }
 
-  // Validar scores
   if (
     match.home_score === null ||
     match.away_score === null
@@ -38,7 +36,6 @@ export function getMatchWinner(
     return null
   }
 
-  // Gana local
   if (
     match.home_score >
     match.away_score
@@ -46,7 +43,6 @@ export function getMatchWinner(
     return "home"
   }
 
-  // Gana visitante
   if (
     match.away_score >
     match.home_score
@@ -54,6 +50,14 @@ export function getMatchWinner(
     return "away"
   }
 
-  // Empate
+  return "draw"
+}
+
+export function getUserPrediction(
+  predictedHome: number,
+  predictedAway: number
+): MatchWinner {
+  if (predictedHome > predictedAway) return "home"
+  if (predictedAway > predictedHome) return "away"
   return "draw"
 }
