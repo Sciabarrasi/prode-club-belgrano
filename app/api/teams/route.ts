@@ -1,35 +1,39 @@
 import { NextResponse } from "next/server"
+import matchesData from "@/lib/data/allMatches.json"
+import { MatchData } from "@/lib/types"
 
 export const dynamic = "force-dynamic"
 
 export async function GET() {
-  const apiToken = process.env.API_WC_token
-
-  if (!apiToken) {
-    return NextResponse.json(
-      { error: "API_WC_token no está configurada" },
-      { status: 500 }
-    )
-  }
-
   try {
-    const response = await fetch("https://api.wc2026api.com/teams", {
-      headers: {
-        Authorization: apiToken,
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
+    const teamsMap = new Map<string, {
+      id: string
+      name: string
+      code: string
+      flagUrl: string
+    }>()
+    
+    matchesData.forEach((match: MatchData) => {
+      if (!teamsMap.has(match.homeTeamCode)) {
+        teamsMap.set(match.homeTeamCode, {
+          id: match.homeTeamCode,
+          name: match.homeTeam,
+          code: match.homeTeamCode,
+          flagUrl: `https://flagcdn.com/${match.homeTeamCode.toLowerCase()}.svg`,
+        })
+      }
+      if (!teamsMap.has(match.awayTeamCode)) {
+        teamsMap.set(match.awayTeamCode, {
+          id: match.awayTeamCode,
+          name: match.awayTeam,
+          code: match.awayTeamCode,
+          flagUrl: `https://flagcdn.com/${match.awayTeamCode.toLowerCase()}.svg`,
+        })
+      }
     })
 
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: `Error API WC2026: ${response.status}` },
-        { status: response.status }
-      )
-    }
-
-    const data = await response.json()
-    return NextResponse.json(data)
+    const teams = Array.from(teamsMap.values())
+    return NextResponse.json(teams)
   } catch (error) {
     console.error("Error obteniendo equipos:", error)
     return NextResponse.json(

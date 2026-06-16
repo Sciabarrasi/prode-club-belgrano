@@ -18,7 +18,6 @@ interface DbPrediction {
   matchId: number
   result: string
   pointsEarned: number
-  scored: boolean
 }
 
 interface DbUser {
@@ -27,7 +26,7 @@ interface DbUser {
   lastName: string
   ticketNumber: number
   points: number
-  phone: string // En admin siempre viene
+  phone: string
   predictions: DbPrediction[]
 }
 
@@ -49,7 +48,13 @@ export function AdminLeaderboardView({ currentUserId, currentUserRole, onLogout 
     async function loadData() {
       try {
         const [usersRes, groupsData, matchesData] = await Promise.all([
-          fetch("/api/leaderboard").then((r) => r.json()),
+          fetch("/api/leaderboard", {
+            cache: "no-store",
+            headers: {
+              "Cache-Control": "no-cache",
+              "Pragma": "no-cache"
+            }
+          }).then((r) => r.json()),
           fetchGroups(),
           fetchGroupStageMatches(),
         ])
@@ -73,14 +78,14 @@ export function AdminLeaderboardView({ currentUserId, currentUserRole, onLogout 
 
   const selectedUser = users.find((u) => u.id === selectedUserId)
 
-  const getPrediction = (matchId: string) => {
+  const getPrediction = (matchId: number) => {
     if (!selectedUser) return undefined
     const pred = selectedUser.predictions.find(
-      (p) => p.matchId === Number(matchId)
+      (p) => p.matchId === matchId
     )
     if (!pred) return undefined
     return {
-      matchId: matchId,
+      matchId: matchId.toString(),
       result: pred.result as "home" | "draw" | "away",
     }
   }
@@ -120,7 +125,6 @@ export function AdminLeaderboardView({ currentUserId, currentUserRole, onLogout 
 
       <main className="container mx-auto px-4 py-6">
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Lista de participantes con teléfono */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
@@ -157,7 +161,6 @@ export function AdminLeaderboardView({ currentUserId, currentUserRole, onLogout 
                             </p>
                           </div>
                         </div>
-                        {/* Teléfono mostrado claramente para admin */}
                         <div className="ml-11 text-sm text-muted-foreground">
                           📞 {u.phone}
                         </div>
@@ -179,7 +182,6 @@ export function AdminLeaderboardView({ currentUserId, currentUserRole, onLogout 
             </Card>
           </div>
 
-          {/* Predicciones del usuario seleccionado */}
           <div className="lg:col-span-2">
             {selectedUserId && selectedUser ? (
               <div>
@@ -223,7 +225,7 @@ export function AdminLeaderboardView({ currentUserId, currentUserRole, onLogout 
                       <MatchCard
                         key={match.id}
                         match={match}
-                        prediction={getPrediction(match.id.toString())}
+                        prediction={getPrediction(match.id)}
                         onPrediction={() => {}}
                         readOnly
                       />
