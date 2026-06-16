@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useAuth, Prediction } from "@/lib/auth-context"
+import { useAuth } from "@/lib/auth-context"
 import {
   fetchGroupStageMatches,
   fetchGroups,
@@ -20,11 +20,9 @@ interface PredictionsViewProps {
 
 export function PredictionsView({}: PredictionsViewProps) {
   const { user } = useAuth()
-
   const [groups, setGroups] = useState<Group[]>([])
   const [matches, setMatches] = useState<Match[]>([])
   const [selectedGroup, setSelectedGroup] = useState("")
-  const [localPredictions] = useState<Prediction[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -53,16 +51,7 @@ export function PredictionsView({}: PredictionsViewProps) {
     loadData()
   }, [])
 
-  const handlePrediction = () => {
-    // Las predicciones ya no son editables
-  }
-
-  const getPrediction = (matchId: string) => {
-    return localPredictions.find((p) => p.matchId === matchId)
-  }
-
   const currentMatches = getMatchesByGroup(matches, selectedGroup)
-  const totalMatches = matches.length
 
   if (loading) {
     return (
@@ -86,28 +75,16 @@ export function PredictionsView({}: PredictionsViewProps) {
               <h1 className="text-xl font-bold text-primary">
                 Mundial 2026
               </h1>
-
               <p className="text-sm text-muted-foreground">
                 Hola, {user?.username}
               </p>
             </div>
-
             <div className="flex items-center gap-4">
               <Link href="/tabla">
                 <Button variant="outline">
                   Ver Tabla
                 </Button>
               </Link>
-
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">
-                  Predicciones
-                </p>
-
-                <p className="text-lg font-bold text-primary">
-                  {localPredictions.length} / {totalMatches}
-                </p>
-              </div>
             </div>
           </div>
         </div>
@@ -115,7 +92,7 @@ export function PredictionsView({}: PredictionsViewProps) {
 
       <main className="container mx-auto px-4 py-6 pb-28">
         <h2 className="text-lg font-semibold mb-4">
-          Fase de Grupos
+          Fase de Grupos - Solo visualización
         </h2>
 
         <div className="flex gap-2 overflow-x-auto pb-4">
@@ -136,8 +113,9 @@ export function PredictionsView({}: PredictionsViewProps) {
             <MatchCard
               key={match.id}
               match={match}
-              prediction={getPrediction(match.id.toString())}
-              onPrediction={handlePrediction}
+              prediction={undefined}
+              onPrediction={() => {}}
+              readOnly
             />
           ))}
         </div>
@@ -152,10 +130,10 @@ export function PredictionsView({}: PredictionsViewProps) {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border">
         <div className="container mx-auto">
           <Button
-            disabled={true}
-            className="w-full"
+            disabled
+            className="w-full opacity-60 cursor-not-allowed"
           >
-            Ya no se permiten actualizaciones
+            ⏳ Predicciones cerradas
           </Button>
         </div>
       </div>

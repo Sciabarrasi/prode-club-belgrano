@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import { invalidateStaticCache } from "@/lib/matches-data"
 import { getMatchWinner, getUserPrediction } from "@/lib/get-match-winner"
+import matchesData from "@/lib/data/allMatches.json"
+import { MatchData } from "@/lib/types"
 
 const DOUBLE_POINTS_MATCHES = [13, 21, 32, 39, 46, 54, 66]
 
@@ -20,38 +22,26 @@ export async function POST() {
 
     invalidateStaticCache()
 
-    const res = await fetch(
-      "https://api.wc2026api.com/matches?status=completed",
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.API_WC_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
-      }
+    const finishedMatches = matchesData.filter(
+      (match: MatchData) =>
+        match.status === "finished" &&
+        match.homeScore !== null &&
+        match.awayScore !== null
     )
 
-    if (!res.ok) {
-      const errorText = await res.text()
-      console.error("Error API:", errorText)
-      return NextResponse.json(
-        { error: "Error al obtener partidos" },
-        { status: 502 }
-      )
+    if (finishedMatches.length === 0) {
+      return NextResponse.json({
+        message: "No hay partidos finalizados para procesar",
+        updated: 0,
+      })
     }
-
-    const matches = await res.json()
 
     let totalUpdated = 0
 
-    for (const match of matches) {
+    for (const match of finishedMatches) {
       const matchId = match.id
-      const homeScore = match.home_score
-      const awayScore = match.away_score
-
-      if (homeScore === null || awayScore === null) {
-        continue
-      }
+      const homeScore = match.homeScore
+      const awayScore = match.awayScore
 
       const realWinner = getMatchWinner({
         home_score: homeScore,
