@@ -284,9 +284,9 @@
     "stadiumCity": "East Rutherford, NJ",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-16T19:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 3,
+    "awayScore": 1
   },
   {
     "id": 51,
@@ -302,8 +302,8 @@
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-16T22:00:00.000Z",
     "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "homeScore": 1,
+    "awayScore": 4
   },
   {
     "id": 58,
