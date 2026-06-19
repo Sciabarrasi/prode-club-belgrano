@@ -420,9 +420,9 @@
     "stadiumCity": "Atlanta, GA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-18T16:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 1,
+    "awayScore": 1
   },
   {
     "id": 8,
@@ -437,9 +437,9 @@
     "stadiumCity": "Inglewood, CA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-18T19:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 4,
+    "awayScore": 1
   },
   {
     "id": 10,
@@ -454,9 +454,9 @@
     "stadiumCity": "Vancouver, BC",
     "stadiumCountry": "Canada",
     "kickoffUtc": "2026-06-18T22:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 6,
+    "awayScore": 0
   },
   {
     "id": 4,
@@ -471,9 +471,9 @@
     "stadiumCity": "Guadalajara",
     "stadiumCountry": "Mexico",
     "kickoffUtc": "2026-06-19T01:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 1,
+    "awayScore": 0
   },
   {
     "id": 22,
