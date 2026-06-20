@@ -488,9 +488,9 @@
     "stadiumCity": "Seattle, WA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-19T19:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 2,
+    "awayScore": 0
   },
   {
     "id": 14,
@@ -505,9 +505,9 @@
     "stadiumCity": "Foxborough, MA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-19T22:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 0,
+    "awayScore": 1
   },
   {
     "id": 16,
@@ -522,9 +522,9 @@
     "stadiumCity": "Philadelphia, PA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-20T01:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 3,
+    "awayScore": 0
   },
   {
     "id": 21,
@@ -539,9 +539,9 @@
     "stadiumCity": "Santa Clara, CA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-20T04:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 0,
+    "awayScore": 1
   },
   {
     "id": 31,
