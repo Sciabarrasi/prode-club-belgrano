@@ -692,9 +692,9 @@
     "stadiumCity": "Arlington, TX",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-22T17:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 2,
+    "awayScore": 0
   },
   {
     "id": 49,
@@ -709,9 +709,9 @@
     "stadiumCity": "Philadelphia, PA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-22T21:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 3,
+    "awayScore": 0
   },
   {
     "id": 53,
@@ -726,9 +726,9 @@
     "stadiumCity": "East Rutherford, NJ",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-23T00:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 3,
+    "awayScore": 2
   },
   {
     "id": 59,
@@ -743,9 +743,9 @@
     "stadiumCity": "Santa Clara, CA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-23T03:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 1,
+    "awayScore": 2
   },
   {
     "id": 64,
