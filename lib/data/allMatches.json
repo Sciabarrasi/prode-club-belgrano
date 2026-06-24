@@ -760,9 +760,9 @@
     "stadiumCity": "Houston, TX",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-23T17:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 5,
+    "awayScore": 0
   },
   {
     "id": 71,
@@ -777,9 +777,9 @@
     "stadiumCity": "Foxborough, MA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-23T20:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 0,
+    "awayScore": 0
   },
   {
     "id": 67,
@@ -794,9 +794,9 @@
     "stadiumCity": "Toronto, ON",
     "stadiumCountry": "Canada",
     "kickoffUtc": "2026-06-23T23:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 0,
+    "awayScore": 1
   },
   {
     "id": 62,
@@ -811,9 +811,9 @@
     "stadiumCity": "Guadalajara",
     "stadiumCountry": "Mexico",
     "kickoffUtc": "2026-06-24T02:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 1,
+    "awayScore": 0
   },
   {
     "id": 11,
