@@ -14,10 +14,7 @@ export async function POST() {
     const role = session?.user?.role
 
     if (role !== "ADMIN" && role !== "SUPERADMIN") {
-      return NextResponse.json(
-        { error: "No autorizado" },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 })
     }
 
     invalidateStaticCache()
@@ -36,56 +33,79 @@ export async function POST() {
       })
     }
 
-    let totalUpdated = 0
+    let totalNew = 0
+    let totalCorrected = 0
 
     for (const match of finishedMatches) {
       const matchId = match.id
-      const homeScore = match.homeScore
-      const awayScore = match.awayScore
-
       const realWinner = getMatchWinner({
-        home_score: homeScore,
-        away_score: awayScore,
+        home_score: match.homeScore,
+        away_score: match.awayScore,
       })
 
       if (!realWinner) continue
 
       const isDoublePoints = DOUBLE_POINTS_MATCHES.includes(matchId)
-      const pointsValue = isDoublePoints ? 2 : 1
+      const correctPoints = isDoublePoints ? 2 : 1
 
       const predictions = await prisma.prediction.findMany({
         where: { matchId },
       })
 
       for (const prediction of predictions) {
-        if (prediction.pointsEarned > 0) {
-          continue
-        }
-
         const userPrediction = getUserPrediction(
           prediction.predictedHome,
           prediction.predictedAway
         )
 
-        if (userPrediction === realWinner) {
-          await prisma.$transaction([
-            prisma.prediction.update({
+        const acertó = userPrediction === realWinner
+
+        if (acertó) {
+          if (prediction.pointsEarned === 0 && !prediction.scored) {
+            // Nunca fue procesada — sumar puntos correctos
+            await prisma.$transaction([
+              prisma.prediction.update({
+                where: { id: prediction.id },
+                data: { pointsEarned: correctPoints, scored: true },
+              }),
+              prisma.user.update({
+                where: { id: prediction.userId },
+                data: { points: { increment: correctPoints } },
+              }),
+            ])
+            totalNew++
+          } else if (prediction.pointsEarned > 0 && prediction.pointsEarned < correctPoints) {
+            // Fue procesada pero con menos puntos de los que corresponde (ej: sumó 1 en vez de 2)
+            const diff = correctPoints - prediction.pointsEarned
+            await prisma.$transaction([
+              prisma.prediction.update({
+                where: { id: prediction.id },
+                data: { pointsEarned: correctPoints, scored: true },
+              }),
+              prisma.user.update({
+                where: { id: prediction.userId },
+                data: { points: { increment: diff } },
+              }),
+            ])
+            totalCorrected++
+          }
+          // Si pointsEarned === correctPoints → ya está bien, no tocar
+        } else {
+          // No acertó — marcar como procesada si no lo estaba
+          if (!prediction.scored) {
+            await prisma.prediction.update({
               where: { id: prediction.id },
-              data: { pointsEarned: pointsValue },
-            }),
-            prisma.user.update({
-              where: { id: prediction.userId },
-              data: { points: { increment: pointsValue } },
-            }),
-          ])
-          totalUpdated++
+              data: { scored: true },
+            })
+          }
         }
       }
     }
 
     return NextResponse.json({
-      message: "Puntos actualizados correctamente",
-      updated: totalUpdated,
+      message: "Puntos verificados y corregidos correctamente",
+      nuevos: totalNew,
+      corregidos: totalCorrected,
     })
   } catch (error) {
     console.error("[REFRESH POINTS ERROR]", error)
