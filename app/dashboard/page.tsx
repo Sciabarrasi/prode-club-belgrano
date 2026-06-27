@@ -20,6 +20,8 @@ export default function DashboardPage() {
   const [refreshing, setRefreshing] = useState(false)
   const [refreshResult, setRefreshResult] = useState<string | null>(null)
   const [refreshError, setRefreshError] = useState<string | null>(null)
+  const [fixing, setFixing] = useState(false)
+  const [fixResult, setFixResult] = useState<string | null>(null)
 
   useEffect(() => {
     if (loading) return
@@ -65,6 +67,24 @@ export default function DashboardPage() {
       setRefreshError("No se pudo conectar con la API. Intentá de nuevo.")
     } finally {
       setRefreshing(false)
+    }
+  }
+
+  const handleFixDoublePoints = async () => {
+    setFixing(true)
+    setFixResult(null)
+    try {
+      const res = await fetch("/api/admin/fix-double-points", { method: "POST" })
+      const data = await res.json()
+      if (!res.ok) {
+        setFixResult(`❌ Error: ${data.error}`)
+      } else {
+        setFixResult(`✅ Corregidos: ${data.fixed} usuarios con puntos dobles (${data.errors} errores)`)
+      }
+    } catch {
+      setFixResult("❌ No se pudo conectar con la API.")
+    } finally {
+      setFixing(false)
     }
   }
 
@@ -151,6 +171,37 @@ export default function DashboardPage() {
                 </span>
               ) : (
                 "Refrescar resultados y calcular puntos"
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/10">
+          <CardHeader>
+            <CardTitle className="text-card-foreground">Corregir Puntos Dobles</CardTitle>
+            <CardDescription>
+              Busca y corrige automáticamente los puntos de los partidos que valen el doble.
+              {fixResult && (
+                <span className={`block mt-1 ${fixResult.startsWith('✅') ? 'text-primary' : 'text-destructive'}`}>
+                  {fixResult}
+                </span>
+              )}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              className="w-full border-border text-card-foreground hover:bg-secondary disabled:opacity-50"
+              onClick={handleFixDoublePoints}
+              disabled={fixing}
+            >
+              {fixing ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  Corrigiendo...
+                </span>
+              ) : (
+                "Corregir puntos de partidos dobles"
               )}
             </Button>
           </CardContent>
