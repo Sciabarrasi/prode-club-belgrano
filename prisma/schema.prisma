@@ -44,27 +44,19 @@ model User {
 }
 
 model Prediction {
-  id                Int       @id @default(autoincrement())
+  id              Int      @id @default(autoincrement())
+  userId          String
+  matchId         Int
+  predictedHome   Int
+  predictedAway   Int
+  pointsEarned    Int      @default(0)
+  scored          Boolean  @default(false)  // ← agregar esta línea
 
-  userId            String
+  user            User     @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  // ID REAL del partido en WC2026 API
-  matchId           Int
-
-  predictedHome     Int
-  predictedAway     Int
-
-  // puntos obtenidos por esta predicción
-  pointsEarned      Int       @default(0)
-
-  user              User      @relation(fields: [userId], references: [id])
-
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-
-  // evita predicciones duplicadas
   @@unique([userId, matchId])
-
   @@index([userId])
   @@index([matchId])
 }
