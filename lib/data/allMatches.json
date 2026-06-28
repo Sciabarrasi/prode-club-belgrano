@@ -1100,9 +1100,9 @@
     "stadiumCity": "Vancouver, BC",
     "stadiumCountry": "Canada",
     "kickoffUtc": "2026-06-27T03:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 1,
+    "awayScore": 5
   },
   {
     "id": 39,
@@ -1117,9 +1117,9 @@
     "stadiumCity": "Seattle, WA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-27T03:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 1,
+    "awayScore": 1
   },
   {
     "id": 72,
@@ -1134,9 +1134,9 @@
     "stadiumCity": "Philadelphia, PA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-27T21:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 2,
+    "awayScore": 1
   },
   {
     "id": 69,
@@ -1151,9 +1151,9 @@
     "stadiumCity": "East Rutherford, NJ",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-27T21:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 0,
+    "awayScore": 2
   },
   {
     "id": 65,
@@ -1168,9 +1168,9 @@
     "stadiumCity": "Atlanta, GA",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-27T23:30:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 3,
+    "awayScore": 1
   },
   {
     "id": 66,
@@ -1185,9 +1185,9 @@
     "stadiumCity": "Miami Gardens, FL",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-27T23:30:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 0,
+    "awayScore": 0
   },
   {
     "id": 60,
@@ -1202,9 +1202,9 @@
     "stadiumCity": "Arlington, TX",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-28T02:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 1,
+    "awayScore": 3
   },
   {
     "id": 57,
@@ -1219,8 +1219,8 @@
     "stadiumCity": "Kansas City, MO",
     "stadiumCountry": "USA",
     "kickoffUtc": "2026-06-28T02:00:00.000Z",
-    "status": "scheduled",
-    "homeScore": null,
-    "awayScore": null
+    "status": "finished",
+    "homeScore": 3,
+    "awayScore": 3
   }
 ]
